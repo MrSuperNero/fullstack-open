@@ -1,0 +1,12 @@
+note on browser:
+page does not re-render, 
+so only one HTTP request this time
+endnote
+
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+server->browser: {"message":"note created"}
+
+note on browser:
+SPA version of app uses JavaScript code from server
+to update the notes list and 
+endnote
