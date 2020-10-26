@@ -20,29 +20,28 @@ const Country = ({country}) => {
       }) // eslint-disable-next-line
   }, [])
 
-  console.log(weather)
-
   return (
     <div>
-    {render &&
-      <div>
-        <h1>{country.name}</h1>
-        <p>capital: {country.capital}</p>
-        <p>population: {country.population}</p>
-        
-        <h2>languages</h2>
-        <ul>
-          {country.languages.map((lang, i) => <li key={i}>{lang.name}</li>)}
-        </ul>
+    {render 
+      ? <div>
+          <h1>{country.name}</h1>
+          <p>capital: {country.capital}</p>
+          <p>population: {country.population}</p>
+          
+          <h2>languages</h2>
+          <ul>
+            {country.languages.map((lang, i) => <li key={i}>{lang.name}</li>)}
+          </ul>
 
-        <img src={country.flag} alt="Flag of country" />
+          <img src={country.flag} alt="Flag of country" />
 
-        <h2>Weather in {country.capital}</h2>
-        <p><strong>temperature:</strong> {weather.main.temp} degrees Fahrenheit</p>
-        <img src={`http://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`} alt="" />
-        <p>{weather.weather[0].description}</p>
-        <p><strong>wind:</strong> {weather.wind.speed} mph</p>
-      </div>
+          <h2>Weather in {country.capital}</h2>
+          <p><strong>temperature:</strong> {weather.main.temp} degrees Fahrenheit</p>
+          <img src={`http://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`} alt="" />
+          <p>{weather.weather[0].description}</p>
+          <p><strong>wind:</strong> {weather.wind.speed} mph</p>
+        </div>
+      : <h1>Loading...</h1>
     }
     </div>
   )
