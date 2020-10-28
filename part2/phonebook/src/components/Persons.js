@@ -1,7 +1,6 @@
 import React from 'react'
-import personService from '../services/persons'
 
-const Persons = ({people, filter}) => {
+const Persons = ({people, filter, deleteFunc}) => {
   
   const filteredList = people.filter((ele) => ele.name.toLowerCase().slice(0, filter.length) === filter.toLowerCase())
 
@@ -10,12 +9,7 @@ const Persons = ({people, filter}) => {
     <div key={d.id}>
       <p>
         {d.name} {d.number}
-        <button onClick={() => {
-          if (window.confirm(`Delete ${d.name}?`)) {
-            personService
-              .deletePerson(d.id)
-          }
-        }}>delete</button>
+        <button onClick={() => deleteFunc(d.id)}>delete</button>
       </p>
     </div>
   )})

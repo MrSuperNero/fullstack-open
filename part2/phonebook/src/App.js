@@ -11,8 +11,7 @@ const App = () => {
   const [ newName, setNewName ] = useState('')
   const [ newNum, setNewNum ] = useState('')
   const [ filter, setFilter ] = useState('')
-  const [ errorFound, setErrorFound ] = useState(false)
-  const [ errorMessage, setErrorMessage ] = useState(null)
+  const [ notification, setNotification ] = useState(null)
 
   useEffect(() => {
     personService
@@ -20,7 +19,30 @@ const App = () => {
       .then(people => {
         setPersons(people)
       })
-  }, [persons])
+  }, [])
+
+  const handleNotification = (message, type='success') => {
+    setNotification({ message, type })
+    setTimeout(() => {
+      setNotification(null)
+    }, 5000)
+  }
+
+  const deletePerson = (id) => {
+    const willDelete = persons.find(person => person.id === id)
+    
+    if (window.confirm(`Delete ${willDelete.name}?`)) {
+      personService.deletePerson(id)
+        .then(response => {
+          setPersons(persons.filter(p => p.id !== id))
+          handleNotification(`Deleted ${willDelete.name}`)
+        })
+        .catch(() => {
+          setPersons(persons.filter(p => p.id !== id))
+          handleNotification(`${willDelete.name} not found in server`, 'error')
+        })
+    }
+  }
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -31,25 +53,22 @@ const App = () => {
     }
 
     // check if name is in list already
-    let namePresent = persons.map((d) => d.name === newName)
+    let namePresent = persons.find((d) => d.name === newName)
 
-    if (namePresent.includes(true)) {
+    if (namePresent) {
       if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
         const updatedPerson = persons.find((d) => d.name === newName)
         personService
           .update(updatedPerson.id, personObject)
           .then(updatedPerson => {
             setPersons(persons.map(person => person.name !== newName ? person : updatedPerson))
-            setErrorMessage(`${updatedPerson.name} has a new number!`)
-            setTimeout(() => setErrorMessage(null), 3000)
+            handleNotification(`${updatedPerson.name} has a new number!`)
+            setNewName('')
+            setNewNum('')
           })
           .catch(error => {
-            setErrorMessage(`${personObject.name} not found in server`)
-            setErrorFound(true)
-            setTimeout(() => {
-              setErrorMessage(null)
-              setErrorFound(false)
-            })
+            console.log(error.response.data)
+            handleNotification(`${updatedPerson.name} not found in server`, 'error')
           })
       }
     } else {
@@ -57,18 +76,13 @@ const App = () => {
         .create(personObject)
         .then(returnedPerson => {
           setPersons(persons.concat(returnedPerson))
+          handleNotification(`Added ${personObject.name}`)
           setNewName('')
           setNewNum('')
-          setErrorMessage(`${returnedPerson.name} has been added to the server`)
-          setTimeout(() => setErrorMessage(null), 3000)
         })
         .catch(error => {
-          setErrorMessage(`${personObject.name} not found in server`)
-          setErrorFound(true)
-          setTimeout(() => {
-            setErrorMessage(null)
-            setErrorFound(false)
-          })
+          console.log(error)
+          handleNotification(`${personObject.name} not found in server`, 'error')
         })
     }
   }
@@ -84,7 +98,7 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
 
-      <Notification message={errorMessage} error={errorFound} />
+      <Notification message={notification} />
 
       <Filter 
         filter={filter} 
@@ -101,7 +115,7 @@ const App = () => {
       />
 
       <h2>Numbers</h2>
-      <Persons people={persons} filter={filter} />
+      <Persons people={persons} filter={filter} deleteFunc={deletePerson} />
     </div>
   )
 }
