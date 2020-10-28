@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import Filter from './Filter'
-import PersonForm from './PersonForm'
-import Persons from './Persons'
-import personService from '../services/persons'
+import Filter from './components/Filter'
+import PersonForm from './components/PersonForm'
+import Persons from './components/Persons'
+import Notification from './components/Notification'
+import personService from './services/persons'
+import './style.css'
 
 const App = () => {
   const [ persons, setPersons ] = useState([]) 
   const [ newName, setNewName ] = useState('')
   const [ newNum, setNewNum ] = useState('')
   const [ filter, setFilter ] = useState('')
+  const [ errorFound, setErrorFound ] = useState(false)
+  const [ errorMessage, setErrorMessage ] = useState(null)
 
   useEffect(() => {
     personService
@@ -34,6 +38,19 @@ const App = () => {
         const updatedPerson = persons.find((d) => d.name === newName)
         personService
           .update(updatedPerson.id, personObject)
+          .then(updatedPerson => {
+            setPersons(persons.map(person => person.name !== newName ? person : updatedPerson))
+            setErrorMessage(`${updatedPerson.name} has a new number!`)
+            setTimeout(() => setErrorMessage(null), 3000)
+          })
+          .catch(error => {
+            setErrorMessage(`${personObject.name} not found in server`)
+            setErrorFound(true)
+            setTimeout(() => {
+              setErrorMessage(null)
+              setErrorFound(false)
+            })
+          })
       }
     } else {
       personService
@@ -42,6 +59,16 @@ const App = () => {
           setPersons(persons.concat(returnedPerson))
           setNewName('')
           setNewNum('')
+          setErrorMessage(`${returnedPerson.name} has been added to the server`)
+          setTimeout(() => setErrorMessage(null), 3000)
+        })
+        .catch(error => {
+          setErrorMessage(`${personObject.name} not found in server`)
+          setErrorFound(true)
+          setTimeout(() => {
+            setErrorMessage(null)
+            setErrorFound(false)
+          })
         })
     }
   }
@@ -56,6 +83,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notification message={errorMessage} error={errorFound} />
 
       <Filter 
         filter={filter} 
