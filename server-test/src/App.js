@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import Note from './Note'
+import noteService from './services/notes'
 
 const App = () => {
   const [ newNote, setNewNote ] = useState('')
   const [ notes, setNotes ] = useState([])
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/notes")
-      .then(response => setNotes(response.data));
+    noteService
+      .getAll()
+      .then(initialNotes => {
+        setNotes(initialNotes)
+      })
+      .catch(error => {
+        console.log('Error loading notes')
+      })
   }, [])
 
-  const noteElements = notes.map((note) => <p key={note.id}>{note.content}</p>)
+  const noteElements = notes.map((note) => <Note key={note.id} note={note.content} />)
 
   const handleChange = (event) => {
     setNewNote(event.target.value)
@@ -25,10 +31,15 @@ const App = () => {
       important: Math.random() < 0.5,
     }
   
-    axios
-      .post('http://localhost:3001/notes', noteObject)
-      .then(response => {
-        setNotes(notes.concat(response.data))
+    noteService
+      .create(noteObject)
+      .then(returnedNote => {
+        setNotes(notes.concat(returnedNote))
+        setNewNote('')
+      })
+      .catch(error => {
+        console.log('Error adding new note')
+        setNotes(notes.filter(n => n.content !== noteObject.content))
         setNewNote('')
       })
   }
